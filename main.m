@@ -73,6 +73,8 @@ function varargout = main_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
+global image_vector;
+
 % --------------------------------------------------------------------
 function menu_open_pic_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_open_pic (see GCBO)
@@ -80,17 +82,70 @@ function menu_open_pic_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % 1.get file name & path
 [file_name, path_name] = uigetfile({'*.jpg;*.png', 'Image Files'; '*.*', 'All FIles'}, 'Choose a pic');
+if(isequal(file_name, 0) || isequal(path_name, 0))
+    return
+end
 % 2.open the file to axes
 axes(handles.axes_disp)
+
 imshow(imread([path_name, file_name]));
-disp(file_name);
+vector = GetAllfv(imread([path_name, file_name]));
+disp([path_name, file_name]);
+Piliangchuli(path_name, path_name);
+disp(vector);
+
+% disp(image_vector)
+% disp(file_name);
 
 % --------------------------------------------------------------------
 function menu_open_dir_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_open_dir (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+%1. open dir chooser
+folder_name = uigetdir();
+if(isequal(folder_name, 0))
+    iterate_all_mat();
+    return; 
+end
+%2. generate .mat file for every pic
+path_name = strcat(folder_name, '/');
+Piliangchuli(path_name, path_name);
+disp(path_name);
 
+%Iterate all the folder to get all mat files
+function train_instance_matrix = iterate_all_mat()
+    result = [];
+    pic_path = strcat(pwd, '/pic');
+    pic_folders = dir(pic_path);
+    row_index = 1;
+    for i = 1 : size(pic_folders)
+        % get pic path one by one
+        folder_name = pic_folders(i).name;
+        if(size(strfind(folder_name, '.')) ~= 0)
+            continue;
+        end
+        cur_pic_dir = strcat(pic_path, '/', folder_name);
+        % disp(cur_pic_dir)
+        % iterate each mat file in the pic path
+        mat_path = strcat(cur_pic_dir, '/*.mat');
+        mat_files = dir(mat_path);
+        for j = 1 : size(mat_files)
+            file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
+            disp(file_path);
+            disp(row_index);
+            result = cat(1, result, get_mat_vector(file_path));
+            row_index = row_index +1;
+        end
+    end
+    disp(result);
+    train_instance_matrix = result;
+
+% Get a .mat file vector
+function mat_vector = get_mat_vector(file_path)
+    load(file_path);
+    mat_vector = Z;
+  disp(mat_vector);
 
 % --- Executes on button press in btn_detect.
 function btn_detect_Callback(hObject, eventdata, handles)
