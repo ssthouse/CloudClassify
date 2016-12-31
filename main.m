@@ -72,9 +72,6 @@ function varargout = main_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
-global image_vector;
-
 % --------------------------------------------------------------------
 function menu_open_pic_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_open_pic (see GCBO)
@@ -97,26 +94,59 @@ disp(vector);
 % disp(image_vector)
 % disp(file_name);
 
+% Generate all .mat files
+function generate_test_and_train_mat()
+    base_pic_dir = strcat(pwd, '/test/');
+    generate_mat_files(base_pic_dir)
+    base_pic_dir = strcat(pwd, '/train/');
+    generate_mat_files(base_pic_dir)
+    
+function generate_mat_files(pic_root_path)
+    %??????, ??????? .mat ??
+    pic_files = dir(pic_root_path);
+    for i = 1 : size(pic_files)
+        if(size(strfind(pic_files(i).name, '.')) ~= 0)
+            continue;
+        end
+        %????????????. mat ??
+        pic_path = strcat(pic_root_path, pic_files(i).name, '/');
+        Piliangchuli(pic_path, pic_path);
+    end
+
 % --------------------------------------------------------------------
 function menu_open_dir_Callback(hObject, eventdata, handles)
 % hObject    handle to menu_open_dir (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-%1. open dir chooser
-folder_name = uigetdir();
-if(isequal(folder_name, 0))
-    iterate_all_mat();
-    return; 
-end
-%2. generate .mat file for every pic
-path_name = strcat(folder_name, '/');
-Piliangchuli(path_name, path_name);
-disp(path_name);
+    %1. open dir chooser
+    folder_name = uigetdir();
+    if(isequal(folder_name, 0))
+        get_train_label();
+        return; 
+    end
+    %2. generate .mat file for every pic
+    path_name = strcat(folder_name, '/');
+    Piliangchuli(path_name, path_name);
+    %disp(path_name);
+
+% Get all train instance's label vector
+function train_instance_label = get_train_label()
+    train_sample_sum = 24;
+    result = zeros(train_sample_sum * 6, 1);
+    row_index = 1;
+    for j = 1 : 6    
+        for i = 1 : train_sample_sum
+            result(row_index, 1) = double(j);
+            row_index = row_index + 1;
+        end
+    end
+    %disp(result);
+    train_instance_label = result;
 
 %Iterate all the folder to get all mat files
-function train_instance_matrix = iterate_all_mat()
-    result = [];
-    pic_path = strcat(pwd, '/pic');
+function train_instance_matrix = get_train_instance_matrix()
+    result = zeros(24*6, 30);
+    pic_path = strcat(pwd, '/train');
     pic_folders = dir(pic_path);
     row_index = 1;
     for i = 1 : size(pic_folders)
@@ -132,23 +162,164 @@ function train_instance_matrix = iterate_all_mat()
         mat_files = dir(mat_path);
         for j = 1 : size(mat_files)
             file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
-            disp(file_path);
-            disp(row_index);
+            %disp(file_path);
+            %disp(row_index);
+            %result = cat(1, result, get_mat_vector(file_path));
+            result(row_index, :) = get_mat_vector(file_path);
+            row_index = row_index +1;
+        end
+    end
+    %disp(result);
+    train_instance_matrix = result;
+
+% ???? mat ???? vector
+function mat_vector = get_mat_vector(file_path)
+    load(file_path);
+    mat_vector = Z;
+    %disp(mat_vector);
+    
+%??????
+function success_rate = begin_pic_detect()
+    %?? model
+    train_label_vector = get_train_label();
+    train_instance_matrix = get_train_instance_matrix();
+    model = svmtrain(train_label_vector, train_instance_matrix);
+    disp(model);
+    % test result
+    test_label_vector = generate_test_label_vector();
+    test_instance_matrix = get_test_instance_matrix();
+    disp(size(test_label_vector))
+    disp(size(test_instance_matrix))
+    result = svmpredict(test_label_vector, test_instance_matrix, model);
+    disp(result);
+    
+%??????? label vector
+function test_label_vector = generate_test_label_vector()
+    sample_sum = 8;
+    result = zeros(sample_sum * 6, 1);
+    row_index = 1;
+    for j = 1 : 6    
+        for i = 1 : sample_sum
+            result(row_index, 1) = double(j);
+            row_index = row_index + 1;
+        end
+    end
+    %disp(result);
+    test_label_vector = result;
+    
+%??????? instance matrix
+function test_instance_matrix = get_test_instance_matrix()
+    result = [];
+    pic_path = strcat(pwd, '/test/');
+    pic_folders = dir(pic_path);
+    row_index = 1;
+    for i = 1 : size(pic_folders)
+        % get pic path one by one
+        folder_name = pic_folders(i).name;
+        if(size(strfind(folder_name, '.')) ~= 0)
+            continue;
+        end
+        cur_pic_dir = strcat(pic_path, '/', folder_name);
+        % disp(cur_pic_dir)
+        % iterate each mat file in the pic path
+        mat_path = strcat(cur_pic_dir, '/*.mat');
+        mat_files = dir(mat_path);
+        for j = 1 : size(mat_files)
+            file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
+            %disp(file_path);
+            %disp(row_index);
             result = cat(1, result, get_mat_vector(file_path));
             row_index = row_index +1;
         end
     end
-    disp(result);
-    train_instance_matrix = result;
-
-% Get a .mat file vector
-function mat_vector = get_mat_vector(file_path)
-    load(file_path);
-    mat_vector = Z;
-  disp(mat_vector);
+    %disp(result);
+    test_instance_matrix = result;
 
 % --- Executes on button press in btn_detect.
 function btn_detect_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_detect (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+    
+    %???????????. mat ??
+    %generate_test_and_train_mat();
+    
+    %??????
+    %begin_pic_detect();
+    
+    %get_train_instance_matrix();
+    
+    %generate_shift_features('train');
+    %generate_shift_features('test', 'test.mat');
+    
+    %test_shift_detet();
+    
+    test_both();
+    
+%???? shift ??===> ??? mat ???
+function generate_shift_features(folder_name, result_file_name)
+    mat_file_path = strcat(pwd,'/', result_file_name);
+    
+    %??????
+    result = [];
+    pic_path = strcat(pwd, '/', folder_name);
+    pic_folders = dir(pic_path);
+    row_index = 1;
+    for i = 1 : size(pic_folders)
+        % get pic path one by one
+        folder_name = pic_folders(i).name;
+        if(size(strfind(folder_name, '.')) ~= 0)
+            continue;
+        end
+        cur_pic_dir = strcat(pic_path, '/', folder_name);
+        % disp(cur_pic_dir)
+        % iterate each mat file in the pic path
+        mat_path = strcat(cur_pic_dir, '/*.jpg');
+        mat_files = dir(mat_path);
+        for j = 1 : size(mat_files)
+            file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
+            %disp(file_path);
+            %disp(row_index);
+            result = cat(1, result, GetDsiftVector(file_path));
+            %result(row_index, :) = get_mat_vector(file_path);
+            row_index = row_index +1;
+        end
+    end
+    disp(result);
+    
+    save(mat_file_path, 'result');
+    
+%?? shift ????
+function test_shift_detet()
+    load('./shift.mat');
+    train_instance_matrix = result;
+    train_label_vector = get_train_label();
+    model = svmtrain(train_label_vector, train_instance_matrix);
+    disp(model);
+    % get test vector
+    load('./test.mat')
+    test_instance_matrix = result;
+    test_label_vector = generate_test_label_vector();
+    result_label = svmpredict(test_label_vector, test_instance_matrix, model);
+    disp(result_label);
+    
+function test_both()
+    load('./shift.mat');
+    train_instance_matrix_left = result;
+    train_instance_matrix_right = get_train_instance_matrix();
+    train_matrix = [train_instance_matrix_left, train_instance_matrix_right];
+    
+    train_label_vector = get_train_label();
+    model = svmtrain(train_label_vector, train_matrix);
+    %disp(model);
+    %disp(train_label_vector);
+    
+    %test
+    load('./test.mat')
+    test_instance_matrix_left = result;
+    test_instance_matrix_right = get_test_instance_matrix();
+    test_instance_matrix = [test_instance_matrix_left, test_instance_matrix_right];
+    test_instance_label = generate_test_label_vector();
+    predicted_label = svmpredict(test_instance_label, test_instance_matrix, model);
+    disp(predicted_label);
+    %disp(test_instance_label);
