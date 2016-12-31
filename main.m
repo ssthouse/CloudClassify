@@ -266,7 +266,7 @@ function generate_shift_feature_mat_file(folder_name, result_file_name)
 function test_shift_detet()
     load('./shift.mat');
     train_instance_matrix = result;
-    train_label_vector = generate_train_label();
+    train_label_vector = generate_train_label(24);
     model = svmtrain(train_label_vector, train_instance_matrix);
     disp(model);
     % get test vector
@@ -283,7 +283,7 @@ function test_both()
     train_instance_matrix_right = get_train_instance_matrix();
     train_matrix = [train_instance_matrix_left, train_instance_matrix_right];
     
-    train_label_vector = generate_train_label();
+    train_label_vector = generate_train_label(24);
     model = svmtrain(train_label_vector, train_matrix);
     %disp(model);
     %disp(train_label_vector);
@@ -293,7 +293,7 @@ function test_both()
     test_instance_matrix_left = result;
     test_instance_matrix_right = get_test_instance_matrix();
     test_instance_matrix = [test_instance_matrix_left, test_instance_matrix_right];
-    test_instance_label = generate_test_label_vector();
+    test_instance_label = generate_test_label_vector(8);
     predicted_label = svmpredict(test_instance_label, test_instance_matrix, model);
     disp(predicted_label);
     %disp(test_instance_label);
