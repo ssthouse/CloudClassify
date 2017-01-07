@@ -1,5 +1,5 @@
 function pic_sift_vector= GetDsiftVector(image_path)
-    run('./vlfeat-0.9.19/toolbox/vl_setup');
+    run(strcat('.', filesep, 'vlfeat-0.9.19', filesep, 'toolbox', filesep, 'vl_setup'));
     shift_image = imread(image_path);
     m=rgb2gray(shift_image) ;
     %figure,imshow(m);

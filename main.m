@@ -88,9 +88,9 @@ function menu_open_pic_Callback(hObject, eventdata, handles)
 
 % Generate all .mat files
 function generate_test_and_train_mat(train_folder_name, test_folder_name)
-    base_pic_dir = strcat(pwd, '/', train_folder_name, '/');
+    base_pic_dir = strcat(pwd, filesep, train_folder_name, filesep);
     generate_mat_files(base_pic_dir)
-    base_pic_dir = strcat(pwd, '/', test_folder_name, '/');
+    base_pic_dir = strcat(pwd, filesep, test_folder_name, filesep);
     generate_mat_files(base_pic_dir)
     
 function generate_mat_files(pic_root_path)
@@ -102,7 +102,7 @@ function generate_mat_files(pic_root_path)
             continue;
         end
         %use Piliangchuli to generate all the .mat files
-        pic_path = strcat(pic_root_path, pic_files(i).name, '/');
+        pic_path = strcat(pic_root_path, pic_files(i).name, filesep);
         Piliangchuli(pic_path, pic_path);
     end
 
@@ -134,7 +134,7 @@ function train_instance_label = generate_train_label(sample_size)
 %Iterate all the folder to get all mat files
 function train_instance_matrix = get_train_instance_matrix()
     result = zeros(24*6, 30);
-    pic_path = strcat(pwd, '/train');
+    pic_path = strcat(pwd, filesep, 'train');
     pic_folders = dir(pic_path);
     row_index = 1;
     for i = 1 : size(pic_folders)
@@ -143,13 +143,13 @@ function train_instance_matrix = get_train_instance_matrix()
         if(size(strfind(folder_name, '.')) ~= 0)
             continue;
         end
-        cur_pic_dir = strcat(pic_path, '/', folder_name);
+        cur_pic_dir = strcat(pic_path, filesep, folder_name);
         % disp(cur_pic_dir)
         % iterate each mat file in the pic path
-        mat_path = strcat(cur_pic_dir, '/*.mat');
+        mat_path = strcat(cur_pic_dir, filesep, '*.mat');
         mat_files = dir(mat_path);
         for j = 1 : size(mat_files)
-            file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
+            file_path = strcat(cur_pic_dir, filesep, mat_files(j).name);
             %disp(file_path);
             %disp(row_index);
             %result = cat(1, result, get_mat_vector(file_path));
@@ -195,10 +195,10 @@ function test_label_vector = generate_test_label_vector(sample_size)
     %disp(result);
     test_label_vector = result;
     
-%generate instance matrix
+%generate instance matrix by color
 function test_instance_matrix = get_test_instance_matrix()
     result = [];
-    pic_path = strcat(pwd, '/test/');
+    pic_path = strcat(pwd, filesep, 'test', filesep);
     pic_folders = dir(pic_path);
     row_index = 1;
     for i = 1 : size(pic_folders)
@@ -207,13 +207,13 @@ function test_instance_matrix = get_test_instance_matrix()
         if(size(strfind(folder_name, '.')) ~= 0)
             continue;
         end
-        cur_pic_dir = strcat(pic_path, '/', folder_name);
+        cur_pic_dir = strcat(pic_path, filesep, folder_name);
         % disp(cur_pic_dir)
         % iterate each mat file in the pic path
-        mat_path = strcat(cur_pic_dir, '/*.mat');
+        mat_path = strcat(cur_pic_dir, filesep, '*.mat');
         mat_files = dir(mat_path);
         for j = 1 : size(mat_files)
-            file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
+            file_path = strcat(cur_pic_dir, filesep, mat_files(j).name);
             %disp(file_path);
             %disp(row_index);
             result = cat(1, result, get_mat_vector(file_path));
@@ -233,10 +233,10 @@ function btn_detect_Callback(hObject, eventdata, handles)
     
 %generate shift bases matrix and save to mat file : "shift.mat"
 function generate_shift_feature_mat_file(folder_name, result_file_name)
-    mat_file_path = strcat(pwd,'/', result_file_name);
+    mat_file_path = strcat(pwd,filesep, result_file_name);
     %generate matrix
     result = [];
-    pic_path = strcat(pwd, '/', folder_name);
+    pic_path = strcat(pwd, filesep, folder_name);
     pic_folders = dir(pic_path);
     row_index = 1;
     for i = 1 : size(pic_folders)
@@ -245,13 +245,13 @@ function generate_shift_feature_mat_file(folder_name, result_file_name)
         if(size(strfind(folder_name, '.')) ~= 0)
             continue;
         end
-        cur_pic_dir = strcat(pic_path, '/', folder_name);
+        cur_pic_dir = strcat(pic_path, filesep, folder_name);
         % disp(cur_pic_dir)
         % iterate each mat file in the pic path
-        mat_path = strcat(cur_pic_dir, '/*.jpg');
+        mat_path = strcat(cur_pic_dir, filesep, '*.jpg');
         mat_files = dir(mat_path);
         for j = 1 : size(mat_files)
-            file_path = strcat(cur_pic_dir, '/', mat_files(j).name);
+            file_path = strcat(cur_pic_dir, filesep, mat_files(j).name);
             %disp(file_path);
             %disp(row_index);
             result = cat(1, result, GetDsiftVector(file_path));
@@ -264,13 +264,13 @@ function generate_shift_feature_mat_file(folder_name, result_file_name)
     
 %test using shift feature to classify pics
 function test_shift_detet()
-    load('./shift.mat');
+    load('shift.mat');
     train_instance_matrix = result;
     train_label_vector = generate_train_label(24);
     model = svmtrain(train_label_vector, train_instance_matrix);
     disp(model);
     % get test vector
-    load('./test.mat')
+    load('test.mat')
     test_instance_matrix = result;
     test_label_vector = generate_test_label_vector(8);
     result_label = svmpredict(test_label_vector, test_instance_matrix, model);
@@ -278,7 +278,7 @@ function test_shift_detet()
     
 %use shift and color feature to classify pics
 function test_both()
-    load('./shift.mat');
+    load('shift.mat');
     train_instance_matrix_left = result;
     train_instance_matrix_right = get_train_instance_matrix();
     train_matrix = [train_instance_matrix_left, train_instance_matrix_right];
@@ -289,7 +289,7 @@ function test_both()
     %disp(train_label_vector);
     
     %test predict
-    load('./test.mat')
+    load('test.mat')
     test_instance_matrix_left = result;
     test_instance_matrix_right = get_test_instance_matrix();
     test_instance_matrix = [test_instance_matrix_left, test_instance_matrix_right];
