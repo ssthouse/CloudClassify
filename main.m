@@ -229,7 +229,11 @@ function btn_detect_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     
-    test_both();
+    test_all();
+
+    %test_enhanced_hanyu();
+
+    %test_enhanced_gaojie();
     
 %generate shift bases matrix and save to mat file : "shift.mat"
 function generate_shift_feature_mat_file(folder_name, result_file_name)
@@ -295,5 +299,49 @@ function test_both()
     test_instance_matrix = [test_instance_matrix_left, test_instance_matrix_right];
     test_instance_label = generate_test_label_vector(8);
     predicted_label = svmpredict(test_instance_label, test_instance_matrix, model);
+ 
     disp(predicted_label);
     %disp(test_instance_label);
+    
+function test_enhanced_gaojie()
+    load('M_sum.mat');
+    train_matrix = double(M_sum');
+    train_label = generate_train_label(24);
+    model = svmtrain(train_label, train_matrix);
+    
+    load('M_sum_test.mat');
+    test_label = generate_test_label_vector(8);
+    test_matrix = double(M_sum_test');
+    result_label = svmpredict(test_label, test_matrix, model);
+    disp(result_label);
+    
+function test_enhanced_hanyu()
+    load('color_matrix_train.mat');
+    train_matrix = double(ans');
+    train_label = generate_train_label(24);
+    model = svmtrain(train_label, train_matrix);
+    
+    load('color_matrix_test.mat');
+    test_label = generate_test_label_vector(8);
+    test_matrix = double(ans');
+    result_label = svmpredict(test_label, test_matrix, model);
+    disp(result_label);
+    
+function test_all()
+    load('M_sum.mat');
+    train_matrix_left = double(M_sum');
+    load('color_matrix_train.mat');
+    train_matrix_right = double(ans');
+    train_matrix = [train_matrix_left, train_matrix_right];
+    
+    train_label = generate_train_label(24);
+    model = svmtrain(train_label, train_matrix);
+    
+    test_label = generate_test_label_vector(8);
+    load('M_sum_test.mat');
+    test_matrix_left = double(M_sum_test');
+    load('color_matrix_test.mat');
+    test_matrix_right = double(ans');
+    test_matrix = [test_matrix_left, test_matrix_right];
+    result_label = svmpredict(test_label, test_matrix, model);
+    disp(result_label);
