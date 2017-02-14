@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 25-Dec-2016 22:35:36
+% Last Modified by GUIDE v2.5 14-Feb-2017 18:41:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -223,17 +223,13 @@ function test_instance_matrix = get_test_instance_matrix()
     %disp(result);
     test_instance_matrix = result;
 
-% --- Executes on button press in btn_detect.
-function btn_detect_Callback(hObject, eventdata, handles)
-% hObject    handle to btn_detect (see GCBO)
+% --- Executes on button press in btn_detect_single_pic.
+function btn_detect_single_pic_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_detect_single_pic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     
     test_all();
-
-    %test_enhanced_hanyu();
-
-    %test_enhanced_gaojie();
     
 %generate shift bases matrix and save to mat file : "shift.mat"
 function generate_shift_feature_mat_file(folder_name, result_file_name)
@@ -327,21 +323,31 @@ function test_enhanced_hanyu()
     result_label = svmpredict(test_label, test_matrix, model);
     disp(result_label);
     
+% to detect all the test folder pics using the .mat data
 function test_all()
+    % combine the color & texture data from train samples
     load('M_sum.mat');
     train_matrix_left = double(M_sum');
     load('color_matrix_train.mat');
     train_matrix_right = double(ans');
     train_matrix = [train_matrix_left, train_matrix_right];
     
+    % train the svm model
     train_label = generate_train_label(24);
     model = svmtrain(train_label, train_matrix);
     
+    % combine the color & texture data from test samples
     test_label = generate_test_label_vector(8);
     load('M_sum_test.mat');
     test_matrix_left = double(M_sum_test');
     load('color_matrix_test.mat');
     test_matrix_right = double(ans');
     test_matrix = [test_matrix_left, test_matrix_right];
+    
+    % use the svm model to detect cloud types
     result_label = svmpredict(test_label, test_matrix, model);
     disp(result_label);
+
+% detect all the cloud type in test folder
+function btn_detect_all_test_files_Callback(hObject, eventdata, handles
+    test_all();
