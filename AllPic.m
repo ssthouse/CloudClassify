@@ -6,7 +6,7 @@
 %B: ???? 240:num ????????????????????????????????????
 %**************************************************************************
 function Res = AllPic(number,pathTest,sz)
- run('.', filesep, 'vlfeat-0.9.19', filesep, 'toolbox', filesep, 'vl_setup');
+ run(strcat('.', filesep, 'vlfeat-0.9.19', filesep, 'toolbox', filesep, 'vl_setup'));
     m = 0;
     Data = cell(1,number);
     L = zeros(1,number);
