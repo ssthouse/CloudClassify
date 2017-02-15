@@ -194,4 +194,6 @@ function btn_detect_all_test_files_Callback(hObject, eventdata, handles)
         table_data{i, 3} =  strcmp(table_data{i, 1}, table_data{i, 2});
     end
     handles.table_all_pic_result.Data = table_data;
+    %show the result text
+    set(handles.text_result, 'visible','on');
     
